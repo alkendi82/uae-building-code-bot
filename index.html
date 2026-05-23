@@ -7,11 +7,13 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
-    header { background: linear-gradient(135deg, #1a1f2e, #2d3561); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #3a3f5c; }
+    header { background: linear-gradient(135deg, #1a1f2e, #2d3561); padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #3a3f5c; flex-wrap: wrap; }
     .logo { width: 36px; height: 36px; background: linear-gradient(135deg, #4f8ef7, #a855f7); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     header h1 { font-size: 18px; font-weight: 600; }
     header p { font-size: 12px; color: #888; }
     .badge { background: #1a3a1a; color: #4ade80; border: 1px solid #4ade80; border-radius: 12px; padding: 2px 10px; font-size: 11px; margin-left: auto; }
+    .change-key-btn { background: none; border: 1px solid #3a3f5c; color: #888; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; }
+    .change-key-btn:hover { border-color: #4f8ef7; color: #4f8ef7; }
     .city-bar { display: flex; gap: 8px; padding: 10px 20px; background: #141824; border-bottom: 1px solid #2a2f45; overflow-x: auto; }
     .city-btn { background: #1e2235; border: 1px solid #3a3f5c; color: #ccc; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; white-space: nowrap; transition: all 0.2s; }
     .city-btn:hover, .city-btn.active { background: #4f8ef7; border-color: #4f8ef7; color: white; }
@@ -36,29 +38,29 @@
     .input-area { display: flex; gap: 10px; padding: 14px 20px; background: #1a1f2e; border-top: 1px solid #2a2f45; }
     #userInput { flex: 1; background: #1e2235; border: 1px solid #3a3f5c; color: #e0e0e0; padding: 10px 16px; border-radius: 24px; font-size: 14px; outline: none; }
     #userInput:focus { border-color: #4f8ef7; }
-    #sendBtn { background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 10px 20px; border-radius: 24px; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
-    #sendBtn:hover { opacity: 0.85; }
+    #sendBtn { background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 10px 20px; border-radius: 24px; cursor: pointer; font-size: 14px; font-weight: 600; }
     #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .api-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .api-box { background: #1a1f2e; border: 1px solid #3a3f5c; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; }
-    .api-box h3 { font-size: 18px; margin-bottom: 8px; color: #fff; }
-    .api-box p { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
-    .api-box input { width: 100%; background: #0f1117; border: 1px solid #3a3f5c; color: #e0e0e0; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 12px; }
-    .api-box input:focus { border-color: #4f8ef7; }
-    .api-box button { width: 100%; background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
-    .api-box a { color: #4f8ef7; font-size: 12px; display: block; text-align: center; margin-top: 12px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 999; }
+    .modal-box { background: #1a1f2e; border: 1px solid #3a3f5c; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; }
+    .modal-box h3 { font-size: 18px; margin-bottom: 10px; color: #fff; }
+    .modal-box p { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+    .modal-box input { width: 100%; background: #0f1117; border: 1px solid #3a3f5c; color: #e0e0e0; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 12px; box-sizing: border-box; }
+    .modal-box input:focus { border-color: #4f8ef7; }
+    .modal-box button { width: 100%; background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .modal-box a { color: #4f8ef7; font-size: 12px; display: block; text-align: center; margin-top: 12px; text-decoration: none; }
+    .modal-box a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
 <!-- API Key Modal -->
-<div class="api-modal" id="apiModal">
-  <div class="api-box">
+<div class="modal-overlay" id="apiModal" style="display:none;">
+  <div class="modal-box">
     <h3>🔑 Enter your Gemini API Key</h3>
-    <p>Your API key is stored locally in your browser only and never shared. Get a free key from Google AI Studio.</p>
+    <p>Your key is saved only in your browser (localStorage) and never shared with anyone. Get a free key from Google AI Studio.</p>
     <input type="password" id="apiKeyInput" placeholder="AIza..." />
     <button onclick="saveApiKey()">Save & Start</button>
-    <a href="https://aistudio.google.com/app/apikey" target="_blank">Get a free API key →</a>
+    <a href="https://aistudio.google.com/app/apikey" target="_blank">Get a free API key from Google →</a>
   </div>
 </div>
 
@@ -69,7 +71,7 @@
     <p>Powered by Gemini AI | DBC 2021 | ADIBC | Fire Code | ISGL</p>
   </div>
   <span class="badge">Gemini AI</span>
-  <button onclick="changeKey()" style="background:none;border:1px solid #3a3f5c;color:#888;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px;margin-left:8px;">🔑 Change Key</button>
+  <button class="change-key-btn" onclick="changeKey()">🔑 Change Key</button>
 </header>
 
 <div class="city-bar">
@@ -114,18 +116,17 @@
 <script>
   let currentCity = 'UAE';
 
-  // Check for saved API key on load
   window.onload = function() {
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-      document.getElementById('apiModal').style.display = 'none';
+    const key = localStorage.getItem('gemini_api_key');
+    if (!key) {
+      document.getElementById('apiModal').style.display = 'flex';
     }
   };
 
   function saveApiKey() {
     const key = document.getElementById('apiKeyInput').value.trim();
     if (!key || !key.startsWith('AIza')) {
-      alert('Please enter a valid Gemini API key (starts with AIza)');
+      alert('Please enter a valid Gemini API key (must start with AIza)');
       return;
     }
     localStorage.setItem('gemini_api_key', key);
@@ -166,7 +167,6 @@
     }
     chatArea.appendChild(div);
     chatArea.scrollTop = chatArea.scrollHeight;
-    return div;
   }
 
   function showTyping() {
@@ -190,18 +190,15 @@
       document.getElementById('apiModal').style.display = 'flex';
       return;
     }
-
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
     const input = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
     const userText = input.value.trim();
     if (!userText) return;
-
     addMessage(userText, 'user-msg');
     input.value = '';
     sendBtn.disabled = true;
     showTyping();
-
     const systemPrompt = `You are an expert UAE building code consultant with deep knowledge of:
 - Dubai Building Code (DBC) 2021
 - Abu Dhabi Capital Development Authority Code (CDC) 2022
@@ -209,8 +206,7 @@
 - UAE Fire and Life Safety Code of Practice 2018
 - Abu Dhabi Infrastructure ISGL 2017
 - Ras Al Khaimah (RAK) building regulations
-Current selected
-city/emirate: ${currentCity}
+Current selected city/emirate: ${currentCity}
 Provide detailed, comprehensive answers. Always:
 1. Cite the specific code section (e.g., DBC 2021 Section 4.3.2, ADIBC Chapter 34, Fire Code Section 8.1)
 2. Give exact numerical requirements (dimensions, percentages, ratios)
@@ -229,13 +225,10 @@ Do NOT give vague or short answers. Always provide complete technical informatio
           generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
         })
       });
-
       const data = await response.json();
       removeTyping();
-
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const answer = data.candidates[0].content.parts[0].text;
-        addMessage(answer, 'bot-msg');
+        addMessage(data.candidates[0].content.parts[0].text, 'bot-msg');
       } else if (data.error) {
         addMessage('API Error: ' + data.error.message, 'bot-msg');
       } else {
@@ -245,7 +238,6 @@ Do NOT give vague or short answers. Always provide complete technical informatio
       removeTyping();
       addMessage('Connection error: ' + err.message, 'bot-msg');
     }
-
     sendBtn.disabled = false;
     input.focus();
   }
