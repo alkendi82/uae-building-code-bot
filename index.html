@@ -222,7 +222,7 @@ Do NOT give vague or short answers. Always provide complete technical informatio
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: systemPrompt + '\n\nUser question: ' + userText }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+          generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
         })
       });
       const data = await response.json();
