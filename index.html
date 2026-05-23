@@ -239,7 +239,7 @@
       font-family: 'Inter', sans-serif;
       transition: opacity 0.2s;
     }
-    #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }     .img-btn { background: #1e2235; border: 1px solid #3a3f5c; color: #888; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }     .img-btn:hover { border-color: #4f8ef7; color: #4f8ef7; background: #2d3561; }     .img-btn.has-image { border-color: #4ade80; color: #4ade80; background: #1a3a1a; }     .img-preview { display: flex; align-items: center; gap: 8px; padding: 8px 24px; background: #141824; border-top: 1px solid #2a2f45; }     .img-preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #3a3f5c; }     .img-preview-text { font-size: 12px; color: #888; flex: 1; }     .img-remove { background: none; border: none; color: #f87171; cursor: pointer; font-size: 16px; padding: 4px; }
 
     /* Modal */
     .modal-overlay {
@@ -339,8 +339,8 @@
 </div>
 
 <div class="input-area">
-  <input type="text" id="userInput" placeholder="Ask about UAE building codes..." onkeypress="handleKey(event)">
-  <button id="sendBtn" onclick="sendMessage()">Send</button>
+  <input type="text" id="userInput" placeholder="Ask about UAE building codes... or attach a photo 📷" onkeypress="handleKey(event)">
+  <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">   <button class="img-btn" id="imgBtn" onclick="document.getElementById('imageInput').click()" title="Attach image">📷</button>   <button id="sendBtn" onclick="sendMessage()">Send</button>
 </div>
 
 <script>
@@ -415,7 +415,7 @@
     if (t) t.remove();
   }
 
-  async function sendMessage() {
+  let selectedImageBase64 = null;   let selectedImageMime = null;    function handleImageSelect(event) {     const file = event.target.files[0];     if (!file) return;     selectedImageMime = file.type;     const reader = new FileReader();     reader.onload = function(e) {       selectedImageBase64 = e.target.result.split(',')[1];       const btn = document.getElementById('imgBtn');       btn.classList.add('has-image');       btn.textContent = '\u2705';       showImagePreview(e.target.result, file.name);     };     reader.readAsDataURL(file);   }    function showImagePreview(src, name) {     let preview = document.getElementById('imagePreview');     if (!preview) {       preview = document.createElement('div');       preview.id = 'imagePreview';       preview.className = 'img-preview';       const inputArea = document.querySelector('.input-area');       inputArea.parentNode.insertBefore(preview, inputArea);     }     preview.innerHTML = `<img src="${src}"><div class="img-preview-text">\ud83d\udcce ${name} - Image ready to analyze</div><button class="img-remove" onclick="removeImage()">\u2715</button>`;   }    function removeImage() {     selectedImageBase64 = null;     selectedImageMime = null;     const btn = document.getElementById('imgBtn');     btn.classList.remove('has-image');     btn.textContent = '\ud83d\udcf7';     document.getElementById('imageInput').value = '';     const preview = document.getElementById('imagePreview');     if (preview) preview.remove();   }    async function sendMessage() {
     const API_KEY = localStorage.getItem('gemini_api_key');
     if (!API_KEY) { document.getElementById('apiModal').style.display = 'flex'; return; }
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
