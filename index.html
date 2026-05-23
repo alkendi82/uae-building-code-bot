@@ -39,125 +39,178 @@
     #sendBtn { background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 10px 20px; border-radius: 24px; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
     #sendBtn:hover { opacity: 0.85; }
     #sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .api-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .api-box { background: #1a1f2e; border: 1px solid #3a3f5c; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; }
+    .api-box h3 { font-size: 18px; margin-bottom: 8px; color: #fff; }
+    .api-box p { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+    .api-box input { width: 100%; background: #0f1117; border: 1px solid #3a3f5c; color: #e0e0e0; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 12px; }
+    .api-box input:focus { border-color: #4f8ef7; }
+    .api-box button { width: 100%; background: linear-gradient(135deg, #4f8ef7, #a855f7); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .api-box a { color: #4f8ef7; font-size: 12px; display: block; text-align: center; margin-top: 12px; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">&#127959;</div>
-    <div>
-      <h1>UAE Building Code Assistant</h1>
-      <p>Powered by Gemini AI | DBC 2021 | ADIBC | Fire Code | ISGL</p>
-    </div>
-    <span class="badge">Gemini AI</span>
-  </header>
-  <div class="city-bar">
-    <button class="city-btn active" onclick="setCity('UAE',this)">All UAE</button>
-    <button class="city-btn" onclick="setCity('Abu Dhabi',this)">Abu Dhabi</button>
-    <button class="city-btn" onclick="setCity('Dubai',this)">Dubai</button>
-    <button class="city-btn" onclick="setCity('Al Ain',this)">Al Ain</button>
-    <button class="city-btn" onclick="setCity('RAK',this)">RAK</button>
-  </div>
-  <div class="chat-area" id="chatArea">
-    <div class="welcome">
-      <h2>UAE Building Code Assistant</h2>
-      <p>Select your city and ask any building code question.</p>
-      <div class="sources">
-        <span class="src">Dubai Building Code 2021</span>
-        <span class="src">Abu Dhabi CDC 2022</span>
-        <span class="src">ADIBC 2013</span>
-        <span class="src">AD Int. Codes 2020</span>
-        <span class="src">UAE Fire Code 2018</span>
-        <span class="src">AD Infrastructure ISGL 2017</span>
-      </div>
-    </div>
-  </div>
-  <div class="chips">
-    <div class="chip" onclick="sendChip(this)">What is GFA?</div>
-    <div class="chip" onclick="sendChip(this)">Fire safety requirements</div>
-    <div class="chip" onclick="sendChip(this)">Setback requirements</div>
-    <div class="chip" onclick="sendChip(this)">Max building height</div>
-    <div class="chip" onclick="sendChip(this)">HVAC requirements</div>
-    <div class="chip" onclick="sendChip(this)">Parking standards</div>
-    <div class="chip" onclick="sendChip(this)">Existing building compliance</div>
-    <div class="chip" onclick="sendChip(this)">Chapter 34 ADIBC</div>
-  </div>
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="Ask about UAE building codes..." onkeypress="handleKey(event)" />
-    <button id="sendBtn" onclick="sendMessage()">Send</button>
-  </div>
 
-  <script>
-    const API_KEY = 'AIzaSyD6bi7xgzhDH9Oz1MRmuPtfK-t51l8ii2U';
+<!-- API Key Modal -->
+<div class="api-modal" id="apiModal">
+  <div class="api-box">
+    <h3>🔑 Enter your Gemini API Key</h3>
+    <p>Your API key is stored locally in your browser only and never shared. Get a free key from Google AI Studio.</p>
+    <input type="password" id="apiKeyInput" placeholder="AIza..." />
+    <button onclick="saveApiKey()">Save & Start</button>
+    <a href="https://aistudio.google.com/app/apikey" target="_blank">Get a free API key →</a>
+  </div>
+</div>
+
+<header>
+  <div class="logo">🏗</div>
+  <div>
+    <h1>UAE Building Code Assistant</h1>
+    <p>Powered by Gemini AI | DBC 2021 | ADIBC | Fire Code | ISGL</p>
+  </div>
+  <span class="badge">Gemini AI</span>
+  <button onclick="changeKey()" style="background:none;border:1px solid #3a3f5c;color:#888;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:11px;margin-left:8px;">🔑 Change Key</button>
+</header>
+
+<div class="city-bar">
+  <button class="city-btn active" onclick="setCity('UAE',this)">All UAE</button>
+  <button class="city-btn" onclick="setCity('Abu Dhabi',this)">Abu Dhabi</button>
+  <button class="city-btn" onclick="setCity('Dubai',this)">Dubai</button>
+  <button class="city-btn" onclick="setCity('Al Ain',this)">Al Ain</button>
+  <button class="city-btn" onclick="setCity('RAK',this)">RAK</button>
+</div>
+
+<div class="chat-area" id="chatArea">
+  <div class="welcome">
+    <h2>UAE Building Code Assistant</h2>
+    <p>Select your city and ask any building code question.</p>
+    <div class="sources">
+      <span class="src">Dubai Building Code 2021</span>
+      <span class="src">Abu Dhabi CDC 2022</span>
+      <span class="src">ADIBC 2013</span>
+      <span class="src">AD Int. Codes 2020</span>
+      <span class="src">UAE Fire Code 2018</span>
+      <span class="src">AD Infrastructure ISGL 2017</span>
+    </div>
+  </div>
+</div>
+
+<div class="chips">
+  <div class="chip" onclick="sendChip(this)">What is GFA?</div>
+  <div class="chip" onclick="sendChip(this)">Fire safety requirements</div>
+  <div class="chip" onclick="sendChip(this)">Setback requirements</div>
+  <div class="chip" onclick="sendChip(this)">Max building height</div>
+  <div class="chip" onclick="sendChip(this)">HVAC requirements</div>
+  <div class="chip" onclick="sendChip(this)">Parking standards</div>
+  <div class="chip" onclick="sendChip(this)">Existing building compliance</div>
+  <div class="chip" onclick="sendChip(this)">Chapter 34 ADIBC</div>
+</div>
+
+<div class="input-area">
+  <input type="text" id="userInput" placeholder="Ask about UAE building codes..." onkeypress="handleKey(event)" />
+  <button id="sendBtn" onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+  let currentCity = 'UAE';
+
+  // Check for saved API key on load
+  window.onload = function() {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+      document.getElementById('apiModal').style.display = 'none';
+    }
+  };
+
+  function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key || !key.startsWith('AIza')) {
+      alert('Please enter a valid Gemini API key (starts with AIza)');
+      return;
+    }
+    localStorage.setItem('gemini_api_key', key);
+    document.getElementById('apiModal').style.display = 'none';
+  }
+
+  function changeKey() {
+    localStorage.removeItem('gemini_api_key');
+    document.getElementById('apiKeyInput').value = '';
+    document.getElementById('apiModal').style.display = 'flex';
+  }
+
+  function setCity(city, btn) {
+    currentCity = city;
+    document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter') sendMessage();
+  }
+
+  function sendChip(el) {
+    document.getElementById('userInput').value = el.textContent;
+    sendMessage();
+  }
+
+  function addMessage(text, type) {
+    const chatArea = document.getElementById('chatArea');
+    const welcome = chatArea.querySelector('.welcome');
+    if (welcome) welcome.remove();
+    const div = document.createElement('div');
+    div.className = `message ${type}`;
+    if (type === 'bot-msg') {
+      div.innerHTML = `<span class="city-tag">${currentCity}</span>\n${text}`;
+    } else {
+      div.textContent = text;
+    }
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const chatArea = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.id = 'typingIndicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const API_KEY = localStorage.getItem('gemini_api_key');
+    if (!API_KEY) {
+      document.getElementById('apiModal').style.display = 'flex';
+      return;
+    }
+
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-    let currentCity = 'UAE';
+    const input = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const userText = input.value.trim();
+    if (!userText) return;
 
-    function setCity(city, btn) {
-      currentCity = city;
-      document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
+    addMessage(userText, 'user-msg');
+    input.value = '';
+    sendBtn.disabled = true;
+    showTyping();
 
-    function handleKey(e) {
-      if (e.key === 'Enter') sendMessage();
-    }
-
-    function sendChip(el) {
-      document.getElementById('userInput').value = el.textContent;
-      sendMessage();
-    }
-
-    function addMessage(text, type) {
-      const chatArea = document.getElementById('chatArea');
-      const welcome = chatArea.querySelector('.welcome');
-      if (welcome) welcome.remove();
-      const div = document.createElement('div');
-      div.className = `message ${type}`;
-      if (type === 'bot-msg') {
-        div.innerHTML = `<span class="city-tag">${currentCity}</span>\n${text}`;
-      } else {
-        div.textContent = text;
-      }
-      chatArea.appendChild(div);
-      chatArea.scrollTop = chatArea.scrollHeight;
-      return div;
-    }
-
-    function showTyping() {
-      const chatArea = document.getElementById('chatArea');
-      const div = document.createElement('div');
-      div.className = 'typing';
-      div.id = 'typingIndicator';
-      div.innerHTML = '<span></span><span></span><span></span>';
-      chatArea.appendChild(div);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    function removeTyping() {
-      const t = document.getElementById('typingIndicator');
-      if (t) t.remove();
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById('userInput');
-      const sendBtn = document.getElementById('sendBtn');
-      const userText = input.value.trim();
-      if (!userText) return;
-
-      addMessage(userText, 'user-msg');
-      input.value = '';
-      sendBtn.disabled = true;
-      showTyping();
-
-      const systemPrompt = `You are an expert UAE building code consultant with deep knowledge of:
+    const systemPrompt = `You are an expert UAE building code consultant with deep knowledge of:
 - Dubai Building Code (DBC) 2021
 - Abu Dhabi Capital Development Authority Code (CDC) 2022
 - Abu Dhabi International Building Code (ADIBC) 2013 and 2020 edition
 - UAE Fire and Life Safety Code of Practice 2018
 - Abu Dhabi Infrastructure ISGL 2017
 - Ras Al Khaimah (RAK) building regulations
-
-Current selected city/emirate: ${currentCity}
-
+Current selected
+city/emirate: ${currentCity}
 Provide detailed, comprehensive answers. Always:
 1. Cite the specific code section (e.g., DBC 2021 Section 4.3.2, ADIBC Chapter 34, Fire Code Section 8.1)
 2. Give exact numerical requirements (dimensions, percentages, ratios)
@@ -165,45 +218,37 @@ Provide detailed, comprehensive answers. Always:
 4. Mention any exceptions or special conditions
 5. If the question applies to multiple emirates, compare them
 6. Structure your answer with clear headings when needed
-
 Do NOT give vague or short answers. Always provide complete technical information with code references.`;
 
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: systemPrompt + '\n\nUser question: ' + userText
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 2048
-            }
-          })
-        });
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + '\n\nUser question: ' + userText }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+        })
+      });
 
-        const data = await response.json();
-        removeTyping();
+      const data = await response.json();
+      removeTyping();
 
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-          const answer = data.candidates[0].content.parts[0].text;
-          addMessage(answer, 'bot-msg');
-        } else if (data.error) {
-          addMessage('API Error: ' + data.error.message, 'bot-msg');
-        } else {
-          addMessage('No response received. Please try again.', 'bot-msg');
-        }
-      } catch (err) {
-        removeTyping();
-        addMessage('Connection error: ' + err.message, 'bot-msg');
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const answer = data.candidates[0].content.parts[0].text;
+        addMessage(answer, 'bot-msg');
+      } else if (data.error) {
+        addMessage('API Error: ' + data.error.message, 'bot-msg');
+      } else {
+        addMessage('No response received. Please try again.', 'bot-msg');
       }
-
-      sendBtn.disabled = false;
-      input.focus();
+    } catch (err) {
+      removeTyping();
+      addMessage('Connection error: ' + err.message, 'bot-msg');
     }
-  </script>
+
+    sendBtn.disabled = false;
+    input.focus();
+  }
+</script>
 </body>
 </html>
