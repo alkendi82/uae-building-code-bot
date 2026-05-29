@@ -691,12 +691,10 @@
 
   <header>
     <div class="logo">🏗️</div>
-
     <div class="title-wrap">
       <h1>UAE Building Code Assistant</h1>
       <p>Ask about Dubai, Abu Dhabi, fire code, ISGL, and more.</p>
     </div>
-
     <div class="header-actions">
       <span class="badge">Gemini AI</span>
       <button class="ghost-btn" onclick="changeKey()">Change Key</button>
@@ -816,6 +814,59 @@
       if (welcome) welcome.remove();
     }
 
+    function getCityPrompt(city) {
+      if (city === "Dubai") {
+        return `
+Primary jurisdiction: Dubai.
+
+Prioritize Dubai Building Code (DBC) 2021 in the main answer.
+If the topic involves fire and life safety, also reference UAE Fire and Life Safety Code when relevant.
+Do not mix Abu Dhabi requirements unless the user explicitly asks for comparison.
+State clearly when a requirement is Dubai-specific.
+        `.trim();
+      }
+
+      if (city === "Abu Dhabi") {
+        return `
+Primary jurisdiction: Abu Dhabi.
+
+Prioritize Abu Dhabi International Building Code (ADIBC), Abu Dhabi Capital Development Code (CDC),
+and Abu Dhabi Infrastructure ISGL where relevant.
+Do not default to Dubai code unless the user explicitly asks for comparison.
+State clearly when the requirement is specific to Abu Dhabi.
+        `.trim();
+      }
+
+      if (city === "Al Ain") {
+        return `
+Primary jurisdiction: Al Ain within Abu Dhabi emirate.
+
+Prioritize Abu Dhabi regulations such as ADIBC, CDC, and ISGL.
+Mention clearly when the rule is emirate-wide rather than Al Ain-only.
+Do not default to Dubai requirements unless the user asks for comparison.
+        `.trim();
+      }
+
+      if (city === "RAK") {
+        return `
+Primary jurisdiction: Ras Al Khaimah.
+
+Prioritize RAK-specific regulations when clearly available.
+If a direct RAK provision is uncertain or not clearly established, say that explicitly,
+then provide the closest applicable UAE code guidance as a fallback.
+Do not present Dubai or Abu Dhabi requirements as mandatory in RAK unless clearly framed as comparison or reference.
+        `.trim();
+      }
+
+      return `
+Jurisdiction scope: UAE general mode.
+
+Answer using the most relevant UAE or emirate-level code.
+If requirements differ between Dubai and Abu Dhabi, mention the difference clearly.
+When the rule is not uniform across emirates, avoid presenting one emirate's rule as universal.
+      `.trim();
+    }
+
     function addMessage(text, type) {
       const chatArea = document.getElementById("chatArea");
       removeWelcome();
@@ -904,13 +955,14 @@
       if (!userText) return;
 
       const apiKey = getApiKey();
-      const apiUrl =
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
       addMessage(userText, "user-msg");
       input.value = "";
       sendBtn.disabled = true;
       showTyping();
+
+      const cityPrompt = getCityPrompt(currentCity);
 
       const systemPrompt = `
 You are an expert UAE building code consultant.
@@ -923,7 +975,10 @@ You have deep knowledge of:
 - Abu Dhabi Infrastructure ISGL 2017
 - Ras Al Khaimah building regulations
 
-Current selected city/emirate: ${currentCity}
+Selected jurisdiction: ${currentCity}
+
+City-specific guidance:
+${cityPrompt}
 
 Instructions:
 1. Answer clearly and practically.
@@ -931,7 +986,9 @@ Instructions:
 3. Give exact dimensions, limits, or numerical requirements when available.
 4. Use markdown headings and bullet points.
 5. Compare emirates only when relevant.
-6. If the question is based on an image, analyze what is visible and explain what still needs verification.
+6. If the user selected a city, prioritize that city's applicable code first.
+7. If the question is based on an image, analyze what is visible and explain what still needs verification.
+8. If the answer is uncertain because local enforcement may vary, say that clearly.
       `.trim();
 
       try {
